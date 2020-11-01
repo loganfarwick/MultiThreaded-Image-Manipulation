@@ -124,9 +124,13 @@ namespace ImageManipulationInParallel
             CopyRegionIntoImage(bitmap02, sourceRectangle, ref bitmap, targetRectangle02);
             CopyRegionIntoImage(bitmap03, sourceRectangle, ref bitmap, targetRectangle03);
             Console.WriteLine("Returned from Parallel.Invoke"); stopwatch.Stop();
+
+            // For debugging, save the three image chunks
             bitmap01.Save("..\\..\\Images\\violet under chair modified in parallel01.jpg");
             bitmap02.Save("..\\..\\Images\\violet under chair modified in parallel02.jpg");
             bitmap03.Save("..\\..\\Images\\violet under chair modified in parallel03.jpg");
+
+            // Save the final image after rebuilding it
             bitmap.Save("..\\..\\Images\\violet under chair modified in parallel.jpg");
             return stopwatch.ElapsedTicks;
         }
