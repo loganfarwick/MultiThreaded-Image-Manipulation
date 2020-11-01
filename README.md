@@ -5,3 +5,4 @@ Does this serially and then in parallel using the Parallel.Invoke control struct
 
 Execution time is about 1/2 the time in parallel with three threads.  </br>
 
+See https://dotnettutorials.net/lesson/parallel-invoke-method-csharp/ for an example of Parallel.Invoke
