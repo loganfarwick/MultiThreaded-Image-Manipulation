@@ -57,18 +57,21 @@ namespace ImageManipulationInParallel
             stopwatch.Start();
             // Perform three tasks in parallel on the matrix of pixels
             int width = size.Width;
-            int widthOneThird = width / 3;
-            int height = size.Height; int heightOneThird = height / 3;
+            int widthOneFourth = width / 4;
+            int height = size.Height; int heightOneFourth = height / 4;
             Object myLock = new Object();
-            Rectangle rectangle01 = new Rectangle(0, 0               , bitmap.Width, heightOneThird);
-            Rectangle rectangle02 = new Rectangle(0, heightOneThird  , bitmap.Width, heightOneThird);
-            Rectangle rectangle03 = new Rectangle(0, heightOneThird*2, bitmap.Width, heightOneThird);
-            Bitmap bitmap01 = new Bitmap(width, heightOneThird);
-            Bitmap bitmap02 = new Bitmap(width, heightOneThird);
-            Bitmap bitmap03 = new Bitmap(width, heightOneThird);
+            Rectangle rectangle01 = new Rectangle(0, 0               , bitmap.Width, heightOneFourth);
+            Rectangle rectangle02 = new Rectangle(0, heightOneFourth  , bitmap.Width, heightOneFourth);
+            Rectangle rectangle03 = new Rectangle(0, heightOneFourth*2, bitmap.Width, heightOneFourth);
+            Rectangle rectangle04 = new Rectangle(0, heightOneFourth * 3, bitmap.Width, heightOneFourth);
+            Bitmap bitmap01 = new Bitmap(width, heightOneFourth);
+            Bitmap bitmap02 = new Bitmap(width, heightOneFourth);
+            Bitmap bitmap03 = new Bitmap(width, heightOneFourth);
+            Bitmap bitmap04 = new Bitmap(width, heightOneFourth);
             bitmap01 = bitmap.Clone(rectangle01, bitmap.PixelFormat);
             bitmap02 = bitmap.Clone(rectangle02, bitmap.PixelFormat);
             bitmap03 = bitmap.Clone(rectangle03, bitmap.PixelFormat);
+            bitmap04 = bitmap.Clone(rectangle04, bitmap.PixelFormat);
             Parallel.Invoke(
                 () =>
                 {
@@ -104,31 +107,52 @@ namespace ImageManipulationInParallel
                 {
                     //                    Console.WriteLine("Begin third task...");
                     Color color, newColor;
-                    for (int i = 0; i < bitmap03.Width; i++) {
-                        for (int k = 0; k < bitmap03.Height; k++) {
+                    for (int i = 0; i < bitmap03.Width; i++)
+                    {
+                        for (int k = 0; k < bitmap03.Height; k++)
+                        {
                             //lock (myLock)
                             { color = bitmap03.GetPixel(i, k); }
                             newColor = Color.FromArgb(0, color.G, color.B);
                             //lock (myLock)
-                            {bitmap03.SetPixel(i, k, newColor);}               // Take out the red
+                            { bitmap03.SetPixel(i, k, newColor); }               // Take out the red
                         }
                     }
-                } //close third Action
+                }, //close third Action
+
+                () =>
+                { //                    Console.WriteLine("Begin third task...");
+                     Color color, newColor;
+                    for (int i = 0; i < bitmap04.Width; i++)
+                    {
+                        for (int k = 0; k < bitmap04.Height; k++)
+                        {
+                            //lock (myLock)
+                            { color = bitmap04.GetPixel(i, k); }
+                            newColor = Color.FromArgb(0, color.G, color.B);
+                            //lock (myLock)
+                            { bitmap04.SetPixel(i, k, newColor); }               // Take out the red
+                        }
+                    }
+                } //close fourth Action
             ); //close parallel.invoke
             // All parallel tasks are done when we get here.
             Rectangle sourceRectangle =   new Rectangle(0, 0,                 bitmap01.Width, bitmap01.Height);
             Rectangle targetRectangle01 = new Rectangle(0, 0,                 bitmap01.Width, bitmap01.Height);
-            Rectangle targetRectangle02 = new Rectangle(0, heightOneThird,    bitmap01.Width, bitmap01.Height);
-            Rectangle targetRectangle03 = new Rectangle(0, heightOneThird*2,  bitmap01.Width, bitmap01.Height);
+            Rectangle targetRectangle02 = new Rectangle(0, heightOneFourth,    bitmap01.Width, bitmap01.Height);
+            Rectangle targetRectangle03 = new Rectangle(0, heightOneFourth*2,  bitmap01.Width, bitmap01.Height);
+            Rectangle targetRectangle04 = new Rectangle(0, heightOneFourth * 3, bitmap01.Width, bitmap01.Height);
             CopyRegionIntoImage(bitmap01, sourceRectangle, ref bitmap, targetRectangle01);
             CopyRegionIntoImage(bitmap02, sourceRectangle, ref bitmap, targetRectangle02);
             CopyRegionIntoImage(bitmap03, sourceRectangle, ref bitmap, targetRectangle03);
+            CopyRegionIntoImage(bitmap04, sourceRectangle, ref bitmap, targetRectangle04);
             Console.WriteLine("Returned from Parallel.Invoke"); stopwatch.Stop();
 
             // For debugging, save the three image chunks
             bitmap01.Save("..\\..\\Images\\violet under chair modified in parallel01.jpg");
             bitmap02.Save("..\\..\\Images\\violet under chair modified in parallel02.jpg");
             bitmap03.Save("..\\..\\Images\\violet under chair modified in parallel03.jpg");
+            bitmap04.Save("..\\..\\Images\\violet under chair modified in parallel04.jpg");
 
             // Save the final image after rebuilding it
             bitmap.Save("..\\..\\Images\\violet under chair modified in parallel.jpg");
